@@ -55,6 +55,10 @@ export const FILTER_CHECK_INTERVAL = Number(retrieveEnvVariable('FILTER_CHECK_IN
 export const FILTER_CHECK_DURATION = Number(retrieveEnvVariable('FILTER_CHECK_DURATION', logger));
 export const CONSECUTIVE_FILTER_MATCHES = Number(retrieveEnvVariable('CONSECUTIVE_FILTER_MATCHES', logger));
 export const CHECK_IF_MUTABLE = retrieveEnvVariable('CHECK_IF_MUTABLE', logger) === 'true';
+export const CHECK_LP_PERCENT = retrieveEnvVariable('CHECK_LP_PERCENT', logger) === 'true';
+export const LP_PERCENT = Number(retrieveEnvVariable('LP_PERCENT', logger));
+export const AUTO_BURN_CHECK = Number(retrieveEnvVariable('AUTO_BURN_CHECK', logger));
+
 export const CHECK_IF_SOCIALS = retrieveEnvVariable('CHECK_IF_SOCIALS', logger) === 'true';
 export const CHECK_IF_MINT_IS_RENOUNCED = retrieveEnvVariable('CHECK_IF_MINT_IS_RENOUNCED', logger) === 'true';
 export const CHECK_IF_FREEZABLE = retrieveEnvVariable('CHECK_IF_FREEZABLE', logger) === 'true';
