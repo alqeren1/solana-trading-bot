@@ -60,6 +60,15 @@ export class PoolFilters {
       this.filters.push(filter);
       logger.info(`Added new filter: ${filter.constructor.name}`);
     }
+    public removeFilter(filterType: new (...args: any[]) => Filter): void {
+      const filterIndex = this.filters.findIndex(f => f instanceof filterType);
+      if (filterIndex !== -1) {
+        this.filters.splice(filterIndex, 1);
+        logger.info(`Removed filter: ${filterType.name}`);
+      } else {
+        logger.info(`Filter not found: ${filterType.name}`);
+      }
+    }
 
   public async execute(poolKeys: LiquidityPoolKeysV4): Promise<boolean> {
     if (this.filters.length === 0) {

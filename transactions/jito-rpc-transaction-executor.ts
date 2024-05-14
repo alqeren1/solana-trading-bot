@@ -1,131 +1,76 @@
 import {
-  BlockhashWithExpiryBlockHeight,
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  Connection,
-  TransactionMessage,
-  VersionedTransaction,
-} from '@solana/web3.js';
-import { TransactionExecutor } from './transaction-executor.interface';
-import { logger } from '../helpers';
-import axios, { AxiosError } from 'axios';
-import bs58 from 'bs58';
-import { Currency, CurrencyAmount } from '@raydium-io/raydium-sdk';
-
-export class JitoTransactionExecutor implements TransactionExecutor {
-  // https://jito-labs.gitbook.io/mev/searcher-resources/json-rpc-api-reference/bundles/gettipaccounts
-  private jitpTipAccounts = [
-    'Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY',
-    'DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL',
-    '96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5',
-    '3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT',
-    'HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe',
-    'ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49',
-    'ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt',
-    'DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh',
-  ];
-
-  private JitoFeeWallet: PublicKey;
-
-  constructor(
-    private readonly jitoFee: string,
-    private readonly connection: Connection,
-  ) {
-    this.JitoFeeWallet = this.getRandomValidatorKey();
-  }
-
-  private getRandomValidatorKey(): PublicKey {
-    const randomValidator = this.jitpTipAccounts[Math.floor(Math.random() * this.jitpTipAccounts.length)];
-    return new PublicKey(randomValidator);
-  }
-
-  public async executeAndConfirm(
-    transaction: VersionedTransaction,
-    payer: Keypair,
-    latestBlockhash: BlockhashWithExpiryBlockHeight,
-  ): Promise<{ confirmed: boolean; signature?: string; error?: string }> {
-    logger.debug('Starting Jito transaction execution...');
-    this.JitoFeeWallet = this.getRandomValidatorKey(); // Update wallet key each execution
-    logger.trace(`Selected Jito fee wallet: ${this.JitoFeeWallet.toBase58()}`);
-
-    try {
-      const fee = new CurrencyAmount(Currency.SOL, this.jitoFee, false).raw.toNumber();
-      logger.trace(`Calculated fee: ${fee} lamports`);
-
-      const jitTipTxFeeMessage = new TransactionMessage({
-        payerKey: payer.publicKey,
-        recentBlockhash: latestBlockhash.blockhash,
-        instructions: [
-          SystemProgram.transfer({
-            fromPubkey: payer.publicKey,
-            toPubkey: this.JitoFeeWallet,
-            lamports: fee,
-          }),
-        ],
-      }).compileToV0Message();
-
-      const jitoFeeTx = new VersionedTransaction(jitTipTxFeeMessage);
-      jitoFeeTx.sign([payer]);
-
-      const jitoTxsignature = bs58.encode(jitoFeeTx.signatures[0]);
-
-      // Serialize the transactions once here
-      const serializedjitoFeeTx = bs58.encode(jitoFeeTx.serialize());
-      const serializedTransaction = bs58.encode(transaction.serialize());
-      const serializedTransactions = [serializedjitoFeeTx, serializedTransaction];
-
-      // https://jito-labs.gitbook.io/mev/searcher-resources/json-rpc-api-reference/url
-      const endpoints = [
-        'https://mainnet.block-engine.jito.wtf/api/v1/bundles',
-        'https://amsterdam.mainnet.block-engine.jito.wtf/api/v1/bundles',
-        'https://frankfurt.mainnet.block-engine.jito.wtf/api/v1/bundles',
-        'https://ny.mainnet.block-engine.jito.wtf/api/v1/bundles',
-        'https://tokyo.mainnet.block-engine.jito.wtf/api/v1/bundles',
-      ];
-
-      const requests = endpoints.map((url) =>
-        axios.post(url, {
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'sendBundle',
-          params: [serializedTransactions],
-        }),
-      );
-
-      logger.trace('Sending transactions to endpoints...');
-      const results = await Promise.all(requests.map((p) => p.catch((e) => e)));
-
-      const successfulResults = results.filter((result) => !(result instanceof Error));
-
-      if (successfulResults.length > 0) {
-        logger.trace(`At least one successful response`);
-        logger.debug(`Confirming jito transaction...`);
-        return await this.confirm(jitoTxsignature, latestBlockhash);
+    Keypair,
+    Connection,
+    BlockhashWithExpiryBlockHeight,
+    VersionedTransaction,
+  } from '@solana/web3.js';
+  import { TransactionExecutor } from './transaction-executor.interface';
+  import { logger } from '../helpers';
+  import { Bundle as JitoBundle } from 'jito-ts/dist/sdk/block-engine/types.js';
+  import { searcherClient as jitoSearcherClient } from 'jito-ts/dist/sdk/block-engine/searcher.js';
+  import fs from 'fs';
+  import bs58 from 'bs58';
+  // Read the wallet keypair from a file and initialize the Jito client.
+  const keypairArray = JSON.parse(fs.readFileSync('./solana_keypair.json', 'utf8'));
+  const keypair = Keypair.fromSecretKey(new Uint8Array(keypairArray));
+  const PRIVATE_KEY = process.env['PRIVATE_KEY'];
+  const wallet = Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY!));
+  const client = jitoSearcherClient("frankfurt.mainnet.block-engine.jito.wtf", keypair, {
+    'grpc.keepalive_timeout_ms': 4000,
+  });
+  
+  export class JitoTransactionExecutor implements TransactionExecutor {
+    constructor(private readonly connection: Connection) {}
+  
+    public async executeAndConfirm(
+      transaction: VersionedTransaction,
+      payer: Keypair, // Correct parameter added based on interface expectation
+      latestBlockhash: BlockhashWithExpiryBlockHeight
+    ): Promise<{ confirmed: boolean; signature?: string; error?: string }> {
+      try {
+        logger.info('Starting Jito transaction execution...');
+  
+        // Serialize the transaction for the Jito bundle
+        const txBundle = transaction;
+        txBundle.sign([wallet]);
+        // Create the Jito bundle and send it
+        await client.sendBundle(new JitoBundle([txBundle], 2));
+  
+        const signature = await this.connection.sendRawTransaction(txBundle.serialize(), {
+            preflightCommitment: this.connection.commitment,
+          });
+        logger.info(`Transaction sent with signature: ${signature}`);
+  
+        // Wait for confirmation
+        return this.confirm(signature, latestBlockhash);
+      } catch (error) {
+        if (error instanceof Error) {
+          logger.error('Error during Jito transaction execution:', {
+              message: error.message, // Detailed error message
+              stack: error.stack,    // Stack trace for debugging
+          });
+          console.log(error)
       } else {
-        logger.debug(`No successful responses received for jito`);
+          // If it's not a standard Error object, log the entire error
+          logger.error('Error during Jito transaction execution:', error);
+          console.log(error)
       }
-
-      return { confirmed: false };
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        logger.trace({ error: error.response?.data }, 'Failed to execute jito transaction');
+      return { confirmed: false};
+  
       }
-      logger.error('Error during transaction execution', error);
-      return { confirmed: false };
+    }
+  
+    private async confirm(signature: string, latestBlockhash: BlockhashWithExpiryBlockHeight) {
+      const confirmation = await this.connection.confirmTransaction(
+        {
+          signature,
+          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          blockhash: latestBlockhash.blockhash,
+        },
+        this.connection.commitment  // Use the appropriate commitment level for your needs
+      );
+  
+      return { confirmed: !confirmation.value.err, signature };
     }
   }
-
-  private async confirm(signature: string, latestBlockhash: BlockhashWithExpiryBlockHeight) {
-    const confirmation = await this.connection.confirmTransaction(
-      {
-        signature,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-        blockhash: latestBlockhash.blockhash,
-      },
-      this.connection.commitment,
-    );
-
-    return { confirmed: !confirmation.value.err, signature };
-  }
-}
+  

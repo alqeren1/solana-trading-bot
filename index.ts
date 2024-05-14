@@ -152,7 +152,8 @@ const runListener = async () => {
       break;
     }
     case 'jito': {
-      txExecutor = new JitoTransactionExecutor(CUSTOM_FEE, connection);
+      //txExecutor = new JitoTransactionExecutor(CUSTOM_FEE, connection);
+      txExecutor = new JitoTransactionExecutor(connection);
       break;
     }
     default: {

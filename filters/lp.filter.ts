@@ -31,7 +31,7 @@ export class LpFilter implements Filter {
         return { ok: false, message: `LpPercent -> Threashold ${maxLp.toString()} > Lp percent ${lpPercent.toFixed().toString()}` };
 
       }
-     
+      
       return { ok: true, message: `CHECKED LP PERCENT -> Lp percent ${lpPercent.toFixed().toString()}  >= Threashold ${maxLp.toString()}` };
       
     } catch (error) {

@@ -32,7 +32,9 @@ export class PoolSizeFilter implements Filter {
           return { ok: false, message: `PoolSize -> Pool size ${poolSize.toFixed()} < ${this.minPoolSize.toFixed()}` };
         }
       }
-
+      if(inRange){
+        console.log(`Successfully checked pool size` + poolSize.raw.toString());
+      }
       return { ok: inRange };
     } catch (error) {
       logger.error({ mint: poolKeys.baseMint }, `Failed to check pool size`);

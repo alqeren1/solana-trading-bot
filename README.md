@@ -2,6 +2,20 @@
 
 -filtreler götüne göre bakmıyo
 
+-burn filter a bakılmadan satmışsa, bozuluyor 
+"[20:45:58.713] DEBUG: Error confirming sell transaction
+    mint: "78bRW37sBai5x5MjiR5zC2me5rtRDMRsB5wzy8PV9yHe"
+    error: {
+      "type": "SolanaJSONRPCError",
+      "message": "failed to get token account balance: Invalid param: could not find account",
+      "stack":
+          SolanaJSONRPCError: failed to get token account balance: Invalid param: could not find account
+              at Connection.getTokenAccountBalance (C:\Users\alp_e\Desktop\BLOCKCHAIN\solniper2\node_modules\@solana\web3.js\src\connection.ts:3352:13)
+              at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      "code": -32602,
+      "name": "SolanaJSONRPCError"
+    }"
+
 # Solana Trading Bot (Beta)
 
 The Solana Trading Bot is a software tool designed to automate the buying and selling of tokens on the Solana blockchain.
