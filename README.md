@@ -1,20 +1,7 @@
--multiple tokens at a time diyince filtreler sıcıyor, ekle çıkar yerine bir sabit filtre bir de burn solo bakma gelebilir cozum
 
--dexscreener social kontrol gelsin aldıktan sonra
 
--burn filter a bakılmadan satmışsa, bozuluyor 
-"[20:45:58.713] DEBUG: Error confirming sell transaction
-    mint: "78bRW37sBai5x5MjiR5zC2me5rtRDMRsB5wzy8PV9yHe"
-    error: {
-      "type": "SolanaJSONRPCError",
-      "message": "failed to get token account balance: Invalid param: could not find account",
-      "stack":
-          SolanaJSONRPCError: failed to get token account balance: Invalid param: could not find account
-              at Connection.getTokenAccountBalance (C:\Users\alp_e\Desktop\BLOCKCHAIN\solniper2\node_modules\@solana\web3.js\src\connection.ts:3352:13)
-              at processTicksAndRejections (node:internal/process/task_queues:95:5)
-      "code": -32602,
-      "name": "SolanaJSONRPCError"
-    }"
+-dexinfo olmadığı halde var bugu geldi, belki api hatasıdır
+
 
 # Solana Trading Bot (Beta)
 

@@ -14,8 +14,10 @@ export class DexInfoFilter implements Filter {
       const response = await axios.get(url);
       const data= response.data;
       if (data.pairs && data.pairs.length > 0 && data.pairs[0].info) {
+        console.log("info available for: "+ poolKeys.baseMint)
         return { ok: true }; // info exists
       } else {
+        console.log("Error, no info available for: "+ poolKeys.baseMint)
         return { ok: false, message: "No 'info' field present in the API response." };
       }
     } catch (error) {

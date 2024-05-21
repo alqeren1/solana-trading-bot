@@ -745,7 +745,7 @@ private calculateStopLoss(quoteAmount: TokenAmount, stopLossPercent: number) {
           
         if (amountOut.gt(takeProfit) && !isUpdating) {
           isUpdating = true;
-          const amountToSell = remainingTokens.div(new BN(2));
+          const amountToSell = remainingTokens.div(new BN(4));
           console.log(`Selling half: Current tokens ${remainingTokens.toString()}, Selling ${amountToSell.toString()}`);
           remainingTokens = remainingTokens.sub(amountToSell);
 

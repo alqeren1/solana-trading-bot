@@ -9,7 +9,7 @@ import axios from 'axios';
 
 
 async function execute() {
-    const url = `https://api.dexscreener.com/latest/dex/tokens/BfYHw4sBWjonvZcD2mUHJNsrEtsi947EBJ64kXNwn1Z8`;
+    const url = `https://api.dexscreener.com/latest/dex/tokens/E7k72zBaN82HUR2AfUL3QqqzeuQNv4W5EJTg8f3h4Jv7`;
     try {
         const response = await axios.get(url);
         const data = response.data; // axios automatically parses the JSON response
@@ -17,7 +17,7 @@ async function execute() {
             console.log("Info is present");
             return { ok: true, message: "Info is present" };
         } else {
-            console.log("sa")
+            console.log("No info availableS")
             return { ok: false, message: "No 'info' field present in the API response." };
         }
     } catch (error) {
