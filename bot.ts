@@ -66,6 +66,8 @@ export interface BotConfig {
 const tipAddress = new PublicKey('ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49');
 const fee = process.env['CUSTOM_FEE'];
 const LP_PERCENT = Number(process.env['LP_PERCENT'])
+let stoplossdecrease = 0
+
 let priceMatching = false;
 let sellStarted = false;
 export class Bot {
@@ -653,7 +655,11 @@ private  calculateTakeProfit(quoteAmount: TokenAmount, takeProfitPercent: number
   return quoteAmount.add(new TokenAmount(this.config.quoteToken, profitFraction, true));
 }
 private calculateStopLoss(quoteAmount: TokenAmount, stopLossPercent: number) {
-  const lossFraction = quoteAmount.mul(stopLossPercent).numerator.div(new BN(100));
+  const lossFraction = quoteAmount.mul(stopLossPercent-stoplossdecrease).numerator.div(new BN(100));
+  if((stopLossPercent-stoplossdecrease)>10){
+    stoplossdecrease = stoplossdecrease + 10
+  }
+  
   return quoteAmount.subtract(new TokenAmount(this.config.quoteToken, lossFraction, true));
 }
   private async priceMatch(amountIn: TokenAmount, poolKeys: LiquidityPoolKeysV4, time: number) {
