@@ -492,7 +492,7 @@ export class Bot {
             );
             const currentTime2 = Math.floor(Date.now() / 1000);
             dexInfo = await this.dexinfoFilter.execute(poolKeys);
-            if(dexInfo){
+            if(dexInfo.ok){
             logger.info(
               { mint: poolKeys.baseMint.toString() },
               `Dex info available, buying`,
