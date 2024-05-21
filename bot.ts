@@ -22,6 +22,7 @@ import { Liquidity, LiquidityPoolKeysV4, LiquidityStateV4, Percent, Token, Token
 import { MarketCache, PoolCache, SnipeListCache } from './cache';
 import { PoolFilters } from './filters'; 
 import { PoolFilterExecutor } from './filters/burnFilterExecutor'; 
+import { DexInfoFilter } from './filters/dexInfoFilter';
 import { TransactionExecutor } from './transactions';
 import { createPoolKeys, logger, NETWORK, sleep } from './helpers';
 import { Mutex } from 'async-mutex';
@@ -70,6 +71,7 @@ let sellStarted = false;
 export class Bot {
   private readonly poolFilters: PoolFilters;
   private readonly poolFilterExecutor: PoolFilterExecutor;
+  private readonly dexinfoFilter: DexInfoFilter;
 
   // snipe list
   private readonly snipeListCache?: SnipeListCache;
@@ -97,6 +99,7 @@ export class Bot {
       maxPoolSize: this.config.maxPoolSize,
     });
     this.poolFilterExecutor = new PoolFilterExecutor(connection);
+    this.dexinfoFilter = new DexInfoFilter(connection);
 
     if (this.config.useSnipeList) {
       this.snipeListCache = new SnipeListCache();
@@ -476,11 +479,44 @@ export class Bot {
 
           
           if (burned) {
-            
-            if(poolSize.raw.gte(firstPoolSize.raw)){
             logger.info(
               { mint: poolKeys.baseMint.toString() },
-              `Lp burned, buying`,
+              `Lp burned, checking Dex info`,
+            );
+            let dexInfo 
+            const lpBurnTime = Math.floor(Date.now() / 1000);
+            while(true){
+            logger.info(
+              { mint: poolKeys.baseMint.toString() },
+              `Waiting for Dex info`,
+            );
+            const currentTime2 = Math.floor(Date.now() / 1000);
+            dexInfo = await this.dexinfoFilter.execute(poolKeys);
+            if(dexInfo){
+            logger.info(
+              { mint: poolKeys.baseMint.toString() },
+              `Dex info available, buying`,
+            );
+            break
+
+            }
+            if((lpBurnTime+300)<currentTime2){
+              logger.info(
+                { mint: poolKeys.baseMint.toString() },
+                `Runned out of time, passing`,
+              );
+              /*this.poolFilters.addFilter(new LpFilter(this.connection, this.config.quoteToken, LP_PERCENT!)); 
+              this.poolFilters.removeFilter(BurnFilter);*/
+              return false;
+            }
+            await sleep(1000)
+            }
+            const response2 = await this.connection.getTokenAccountBalance(poolKeys.quoteVault, this.connection.commitment);
+            const poolSize2 = new TokenAmount(this.config.quoteToken, response2.value.amount, true);
+            if(poolSize2.raw.gte(firstPoolSize.raw)){
+            logger.info(
+              { mint: poolKeys.baseMint.toString() },
+              `LP burned, Dex info available, buying`,
             );
             /*this.poolFilters.addFilter(new LpFilter(this.connection, this.config.quoteToken, LP_PERCENT!)); 
             this.poolFilters.removeFilter(BurnFilter);*/
