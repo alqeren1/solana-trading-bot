@@ -70,6 +70,21 @@ export class PoolFilters {
       }
     }
 
+    public async executeBurnFilter(poolKeys: LiquidityPoolKeysV4): Promise<boolean> {
+      // Create a new instance of BurnFilter just for this check
+      const burnFilter = new BurnFilter(this.connection);
+  
+      // Execute the burn filter directly
+      const result = await burnFilter.execute(poolKeys);
+      
+      // Log the result if not passed
+      if (!result.ok) {
+          logger.info(result.message || "Burn check failed.");
+      }
+  
+      return result.ok;
+  }
+  
   public async execute(poolKeys: LiquidityPoolKeysV4): Promise<boolean> {
     if (this.filters.length === 0) {
       return true;

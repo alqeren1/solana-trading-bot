@@ -1,6 +1,6 @@
--jitoyu seninkini entegre et, filtreler sağlam
+-multiple tokens at a time diyince filtreler sıcıyor, ekle çıkar yerine bir sabit filtre bir de burn solo bakma gelebilir cozum
 
--filtreler götüne göre bakmıyo
+-dexscreener social kontrol gelsin aldıktan sonra
 
 -burn filter a bakılmadan satmışsa, bozuluyor 
 "[20:45:58.713] DEBUG: Error confirming sell transaction

@@ -33,10 +33,10 @@ export class RenouncedFreezeFilter implements Filter {
       const freezable = !this.checkFreezable || deserialize.freezeAuthorityOption !== 0;
       const ok = renounced && !freezable;
       const message: string[] = [];
-      if (ok){
+      /*if (ok){
 
         console.log(`Renounced check passed`);
-      }
+      }*/
       if (!renounced) {
         message.push('mint');
       }
