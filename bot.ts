@@ -539,8 +539,11 @@ export class Bot {
           
   
           await sleep(1000);
-        } finally {
-          
+        } catch {
+          logger.info(
+            { mint: poolKeys.baseMint.toString() },
+            `Some error happened while checking LP`,
+          );
         }
       } while (!burned);}}
 
@@ -751,7 +754,7 @@ private calculateStopLoss(quoteAmount: TokenAmount, stopLossPercent: number) {
           
         if (amountOut.gt(takeProfit) && !isUpdating) {
           isUpdating = true;
-          const amountToSell = remainingTokens.div(new BN(4));
+          const amountToSell = remainingTokens.div(new BN(2));
           console.log(`Selling half: Current tokens ${remainingTokens.toString()}, Selling ${amountToSell.toString()}`);
           remainingTokens = remainingTokens.sub(amountToSell);
 

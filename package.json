@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node index.ts",
     "test": "ts-node dexinfoTest.ts",
+    "tipTest": "ts-node jitoTipAmountTest.ts",
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
